@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
 var fortune = require('./lib/fortune.js');
+var weather = require('./lib/weather.js');
 
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
@@ -10,6 +11,11 @@ app.set('port', process.env.PORT || 3000);
 app.use(express.static(__dirname + '/public'));
 app.use(function (req, res, next) {
     res.locals.showTests = app.get('evt') !== 'productoin' && req.query.test === '1';
+    next();
+});
+app.use(function (req, res, next) {
+    if(!res.locals.partials) res.locals.partials = {};
+    res.locals.partials.weatherContext = weather.getWeatherData();
     next();
 });
 
@@ -43,6 +49,12 @@ app.use(function (err, req, res, next) {
     res.render('500');
 });
 
+
+
+
 app.listen(app.get('port'), function () {
     console.log('Express запущен на порту ' + app.get('port'));
 });
+
+
+
