@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Meadowlark</title>
+
+
     {{#if showTests}}
     <link rel="stylesheet" href="/vendor/mocha.css"/>
     {{/if}}
-    <script src="//code.jquery.com/jquery-2.0.0.min.js"></script>
+    {{{_sections.head}}}
 </head>
 <body>
 {{{body}}}
+
+<script src="//code.jquery.com/jquery-2.0.0.min.js"></script>
+{{{_sections.jquery}}}
 
 {{#if showTests}}
     <div id="mocha"></div>
@@ -25,5 +30,6 @@
     {{/if}}
     <script>mocha.run();</script>
 {{/if}}
+
 </body>
 </html>
