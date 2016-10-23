@@ -18,6 +18,7 @@ app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 app.use(express.static(__dirname + '/public'));
+app.use(require('body-parser').urlencoded({extended: true}));
 app.use(function (req, res, next) {
     res.locals.showTests = app.get('evt') !== 'productoin' && req.query.test === '1';
     next();
@@ -60,6 +61,20 @@ app.get('/data/nursery-rhyme', function(req, res){
         adjective: 'bushy',
         noun: 'heck',
     });
+});
+
+app.get('/thank-you', function(req, res){
+    res.render('thank-you');
+});
+app.get('/newsletter', function(req, res){
+    res.render('newsletter', { csrf: 'CSRF token goes here' });
+});
+app.post('/process', function(req, res){
+    console.log('Form ' + req.query.form);
+    console.log('token ' + req.body._csrf);
+    console.log('name ' + req.body.name);
+    console.log('email ' + req.body.email);
+    res.redirect('/thank-you');
 });
 
 
