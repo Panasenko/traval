@@ -1,11 +1,6 @@
-{{#section 'head'}}
-    <link rel="stylesheet" href="/vendor/bootstrap.min.css">
-{{/section}}
-
 <div class="formContainer">
     <form class="form-horizontal newsletterForm" role="form"
-          action="/process?form=newsletter" method="POST">
-        <input type="hidden" name="_csrf" value="{{csrf}}">
+          action="/newsletter" method="POST">
         <div class="form-group">
             <label for="fieldName" class="col-sm-2 control-label">Name</label>
             <div class="col-sm-4">
@@ -27,4 +22,3 @@
         </div>
     </form>
 </div>
-
