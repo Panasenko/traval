@@ -19,6 +19,7 @@ var mongoose = require('mongoose');
 var Vacation = require('./models/vacation.js');
 var VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
 
+
 var MongoSessionStore = require('session-mongoose')(require('connect'));
 var sessionStore = new MongoSessionStore({ url: credentials.mongo[app.get('env')].connectionString });
 
@@ -140,7 +141,10 @@ app.use(function(req, res, next){
 app.use(express.static(__dirname + '/public'));
 app.use('/api', require('cors')());
 
+
 app.use(require('body-parser').json());
+var rest = require('connect-rest');
+app.use(rest.rester(apiOptions));
 
 app.use(require('cookie-parser')(credentials.cookiesSecret));
 app.use(require('express-session')({
@@ -185,11 +189,6 @@ app.use(function (req,res,next) {
     next();
 });
 
-app.use(function (req,res,next) {
-    if(req.body) console.log(req.body)
-    next();
-});
-
 
 
 
@@ -206,22 +205,22 @@ admin.get('/users', function(req, res){
 
 var Attraction = require('./models/attraction.js');
 
-app.get('/api/attractions', function(req, res){
+
+
+rest.get('/attractions', function(req, content, callback){
     Attraction.find({ approved: true }, function(err, attractions){
-        if(err) return res.status(500).send('Произошла ошибка базы данных');
-        res.json(attractions.map(function (a) {
+        if(err) return callback({ error: 'Internal error.' });
+        callback(null, attractions.map(function(a){
             return {
                 name: a.name,
-                id: a._id,
                 description: a.description,
-                location: a.location
-            }
-        }))
+                location: a.location,
+            };
+        }));
     });
 });
 
-app.post('/api/attraction', function(req, res){
-
+rest.post('/attraction', function(req, content, callback){
     var a = new Attraction({
         name: req.body.name,
         description: req.body.description,
@@ -233,26 +232,39 @@ app.post('/api/attraction', function(req, res){
         },
         approved: false,
     });
-
     a.save(function(err, a){
-        if(err) return res.status(500).send('Произошла ошибка базы данных');
-        res.json({id: a._id});
+        if(err) return callback({ error: 'Unable to add attraction.' });
+        callback(null, { id: a._id });
     });
 });
 
-app.get('/api/attraction/:id', function(req, res){
+rest.get('/attraction/:id', function(req, content, callback){
     Attraction.findById(req.params.id, function(err, a){
-        if(err) return res.status(500).send('Произошла ошибка базы данных');
-        res.json({
+        if(err) return callback({ error: 'Unable to retrieve attraction.' });
+        callback(null, {
             name: a.name,
-            id: a._id,
             description: a.description,
-            location: a.location
+            location: a.location,
         });
     });
 });
 
+// API configuration
+var apiOptions = {
+    context: '/api',
+    domain: require('domain').create(),
+};
 
+apiOptions.domain.on('error', function(err){
+    console.log('API domain error.\n', err.stack);
+    setTimeout(function(){
+        console.log('Server shutting down after API domain error.');
+        process.exit(1);
+    }, 5000);
+    server.close();
+    var worker = require('cluster').worker;
+    if(worker) worker.disconnect();
+});
 
 
 app.get('/', function (req, res) {
