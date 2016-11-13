@@ -18,7 +18,7 @@ var credentials = require('./lib/credentials.js');
 var mongoose = require('mongoose');
 var Vacation = require('./models/vacation.js');
 var VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
-
+var vhost = require('vhost');
 
 var MongoSessionStore = require('session-mongoose')(require('connect'));
 var sessionStore = new MongoSessionStore({ url: credentials.mongo[app.get('env')].connectionString });
@@ -144,7 +144,7 @@ app.use('/api', require('cors')());
 
 app.use(require('body-parser').json());
 var rest = require('connect-rest');
-app.use(rest.rester(apiOptions));
+
 
 app.use(require('cookie-parser')(credentials.cookiesSecret));
 app.use(require('express-session')({
@@ -171,6 +171,7 @@ app.use(function (req, res, next) {
 });
 
 
+
 switch (app.get('env')){
     case 'development':
         app.use(require('morgan')('dev'));
@@ -191,16 +192,7 @@ app.use(function (req,res,next) {
 
 
 
-
-var admin = express.Router();
-app.use(require('vhost')('admin.*', admin));
-
-admin.get('/', function(req, res){
-    res.render('admin/home');
-});
-admin.get('/users', function(req, res){
-    res.render('admin/users');
-});
+app.use(vhost('api.*', rest.rester(apiOptions)));
 
 
 var Attraction = require('./models/attraction.js');
@@ -251,7 +243,7 @@ rest.get('/attraction/:id', function(req, content, callback){
 
 // API configuration
 var apiOptions = {
-    context: '/api',
+    context: '/',
     domain: require('domain').create(),
 };
 
