@@ -153,6 +153,13 @@ app.use(require('express-session')({
     secret: credentials.cookiesSecret,
     store: sessionStore
 }));
+
+app.use(require('csurf')());
+app.use(function(req, res, next){
+    res.locals._csrfToken = req.csrfToken();
+    next();
+});
+
 app.use(function(req, res, next){
     // if there's a flash message, transfer
     // it to the context, then clear it
